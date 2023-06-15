@@ -1,0 +1,36 @@
+name: sdk-py-provider
+version: 2.4.0
+summary: Data Layer provider sample written in Python for ctrlX
+title: sdk-py-provider
+description: |
+  This sample shows how to provide data to the ctrlX Data Layer
+base: core20
+confinement: strict
+grade: stable
+
+apps:
+  provider:
+    command: bin/main.py
+    plugs:
+      - network
+      - datalayer
+    daemon: simple
+    restart-condition: always
+    passthrough:   
+      restart-delay: 10s
+
+parts:
+  provider:
+    plugin: python
+    source: .
+    stage-packages:
+      - libzmq5
+      - ctrlx-datalayer
+    python-packages:  
+      - ./whl/pylogix-0.8.13-py2.py3-none-any.whl
+            
+plugs:
+  datalayer:
+    interface: content
+    content: datalayer
+    target: $SNAP_DATA/.datalayer
