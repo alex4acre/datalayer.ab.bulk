@@ -32,10 +32,7 @@ from ctrlxdatalayer.metadata_utils import MetadataBuilder
 
 class ABnode:
 
-    
-
-    #def __init__(self, provider : Provider, address : str, abTagValues : list, listIndex : int, datatype : str,  ):
-    def __init__(self, provider : Provider, abTagName : str, controller : PLC, type : str, dataTypeValue : int):
+    def __init__(self, provider : Provider, abTagName : str, controller : PLC, type : str, dataTypeValue : int, deviceID : str):
         
         self.cbs = ProviderNodeCallbacks(
             self.__on_create,
@@ -49,7 +46,7 @@ class ABnode:
         self.providerNode = ProviderNode(self.cbs)
         self.provider = provider
         self.data = Variant()
-        self.address = "Allen-Bradley/" + type + "/" + abTagName
+        self.address = "Allen-Bradley/" + deviceID + "/" + type + "/" + abTagName
         self.abTagName = abTagName
         self.controller = controller
         self.dataType = self.getVariantType(type)

@@ -64,18 +64,34 @@ def main():
                 # snap environment
                 #bfbs_path = os.path.join(snap_path, bfbs_file)
                 #mddb_path = os.path.join(snap_path, mddb_file)
-
-            comm = PLC()
-            comm.IPAddress = '192.168.1.70'
-            tags = comm.GetTagList()
             abProviderList = []
-            for t in tags.Value:
-                #print(t)
-                if t.Array == 0 and t.Struct == 0 and (t.DataType != ""):
-                    #print(t.DataType)
-                    abProvider = ABnode(provider, t.TagName, comm, t.DataType, t.DataTypeValue)
-                    abProvider.register_node()
-                    abProviderList.append(abProvider)
+            comm = PLC()
+            devices = comm.Discover()
+            print(devices.Value)
+            if devices.Value != []:
+                for device in devices.Value:
+                    comm.IPAddress = device.IPAddress
+                    tags = comm.GetTagList()
+                    deviceProperties = comm.GetDeviceProperties()
+                    print(deviceProperties.Value.ProductName)
+                    for t in tags.Value:
+                        #print(t)
+                        if t.Array == 0 and t.Struct == 0 and (t.DataType != ""):
+                            #print(t.DataType)
+                            abProvider = ABnode(provider, t.TagName, comm, t.DataType, t.DataTypeValue, deviceProperties.Value.ProductName)
+                            abProvider.register_node()
+                            abProviderList.append(abProvider)
+            else:
+                comm.IPAddress = '192.168.1.70'    
+                tags = comm.GetTagList()
+                deviceProperties = comm.GetDeviceProperties()
+                print(deviceProperties.Value.ProductName)
+                for t in tags.Value:
+                    #print(t)
+                    if t.Array == 0 and t.Struct == 0 and (t.DataType != ""):
+                        abProvider = ABnode(provider, t.TagName, comm, t.DataType, t.DataTypeValue, deviceProperties.Value.ProductName)
+                        abProvider.register_node()
+                        abProviderList.append(abProvider)
             print("INFO Running endless loop...", flush=True)
             while provider.is_connected():
                 time.sleep(1.0)  # Seconds
