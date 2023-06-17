@@ -5,7 +5,7 @@ setup(
     version='2.4.0',
     description='This sample shows how to provide data to ctrlX Data Layer',
     author='SDK Team',
-    install_requires = ['ctrlx-datalayer', 'pylogix'],    
+    install_requires = ['ctrlx-datalayer', 'pylogix', 'pycomm3'],    
     packages=['app', 'helper'],
     # https://stackoverflow.com/questions/1612733/including-non-python-files-with-setup-py
     package_data={'./': []},

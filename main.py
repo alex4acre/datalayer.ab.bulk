@@ -31,9 +31,13 @@ from ctrlxdatalayer.variant import Variant, Result
 import pylogix
 from pylogix import PLC
 
+import pycomm3
+from pycomm3 import LogixDriver
+
 from helper.ctrlx_datalayer_helper import get_provider
 
 from app.ab_provider_node import ABnode
+from app.ab_provider_node import ABnode_Array
 
 def main():
 
@@ -68,30 +72,49 @@ def main():
             comm = PLC()
             devices = comm.Discover()
             print(devices.Value)
-            if devices.Value != []:
+            #if devices.Value != []:
+            if False:
                 for device in devices.Value:
-                    comm.IPAddress = device.IPAddress
-                    tags = comm.GetTagList()
-                    deviceProperties = comm.GetDeviceProperties()
-                    print(deviceProperties.Value.ProductName)
-                    for t in tags.Value:
-                        #print(t)
-                        if t.Array == 0 and t.Struct == 0 and (t.DataType != ""):
-                            #print(t.DataType)
-                            abProvider = ABnode(provider, t.TagName, comm, t.DataType, t.DataTypeValue, deviceProperties.Value.ProductName)
-                            abProvider.register_node()
-                            abProviderList.append(abProvider)
+                    with LogixDriver(device.IPAddress) as controller:
+                        tags = plc.get_tag_list('*')
+                        deviceProperties = comm.GetDeviceProperties()
+                        for t in tags.Value:
+                            #print(t)
+                            if t['tag_type'] == 'atomic':
+                                #print(t.DataType)
+                                abProvider = ABnode(provider, t['tag_name'], controller, t['data_type'], deviceProperties.Value.ProductName)
+                                abProvider.register_node()
+                                abProviderList.append(abProvider)
             else:
-                comm.IPAddress = '192.168.1.70'    
-                tags = comm.GetTagList()
-                deviceProperties = comm.GetDeviceProperties()
-                print(deviceProperties.Value.ProductName)
-                for t in tags.Value:
-                    #print(t)
-                    if t.Array == 0 and t.Struct == 0 and (t.DataType != ""):
-                        abProvider = ABnode(provider, t.TagName, comm, t.DataType, t.DataTypeValue, deviceProperties.Value.ProductName)
-                        abProvider.register_node()
-                        abProviderList.append(abProvider)
+                comm = PLC()
+                comm.IPAddress = "192.168.1.90"
+                with LogixDriver("192.168.1.90") as controller:
+                        tags = controller.get_tag_list('*')
+                        deviceProperties = comm.GetDeviceProperties()
+                        for t in tags:
+                            print(t["tag_name"])
+                            if t['tag_type'] == 'atomic' and t['dim'] == 0:
+                                path = controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/" + t["data_type"]  + "/" + t["tag_name"]
+                                abProvider = ABnode(provider, t['tag_name'], comm, t['data_type'], path)
+                                abProvider.register_node()
+                                abProviderList.append(abProvider)
+                            elif t['tag_type'] == 'atomic' and t['dim'] != 0:
+                                length = t["dimensions"][0]
+                                for x in range(t["dimensions"][0]):
+                                    path = controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/ARRAY/" + t["data_type"]  + "/" + t["tag_name"] + "/" + str(x)
+                                    abProvider = ABnode_Array(provider, t['tag_name'] + "[" + str(x) + "]", comm, t['data_type'], path)
+                                    abProvider.register_node()
+                                    abProviderList.append(abProvider)
+                            #elif t['tag_type'] != 'atomic':
+                                #structItems = plc.tags['tag_name']
+                               #for key in structItems["data_type"]["internal_tags"].keys():
+                               #     if structItems["data_type"]["internal_tags"][key]['tag_type'] == "atomic" and structItems["data_type"]["internal_tags"][key]['array'] == 0:
+
+                                    
+
+
+
+
             print("INFO Running endless loop...", flush=True)
             while provider.is_connected():
                 time.sleep(1.0)  # Seconds
