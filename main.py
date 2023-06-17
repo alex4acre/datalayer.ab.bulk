@@ -105,12 +105,27 @@ def main():
                                     abProvider = ABnode_Array(provider, t['tag_name'] + "[" + str(x) + "]", comm, t['data_type'], path)
                                     abProvider.register_node()
                                     abProviderList.append(abProvider)
-                            #elif t['tag_type'] != 'atomic':
-                                #structItems = plc.tags['tag_name']
-                               #for key in structItems["data_type"]["internal_tags"].keys():
-                               #     if structItems["data_type"]["internal_tags"][key]['tag_type'] == "atomic" and structItems["data_type"]["internal_tags"][key]['array'] == 0:
-
-                                    
+                            elif t['tag_type'] != 'atomic':
+                                structItems = controller.tags[t['tag_name']]
+                                #print(structItems)
+                                for key in structItems["data_type"]["internal_tags"].keys():
+                                    print(key)
+                                    if 'array' in structItems["data_type"]["internal_tags"][key]:
+                                        if structItems["data_type"]["internal_tags"][key]['tag_type'] == "atomic" and structItems["data_type"]["internal_tags"][key]['array'] == 0:
+                                            path = controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/STRUCT/" + t["tag_name"] + "/" + key
+                                            tagName = t['tag_name'] + "." + key
+                                            dataType = structItems["data_type"]["internal_tags"][key]['data_type']
+                                            abProvider = ABnode(provider, tagName, comm, dataType, path)
+                                            abProvider.register_node()
+                                            abProviderList.append(abProvider)
+                                    elif structItems["data_type"]["internal_tags"][key]['tag_type'] == "atomic":
+                                        path = controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/STRUCT/" + t["tag_name"] + "/" + key
+                                        tagName = t['tag_name'] + "." + key
+                                        dataType = structItems["data_type"]["internal_tags"][key]['data_type']
+                                        abProvider = ABnode(provider, tagName, comm, dataType, path)
+                                        abProvider.register_node()
+                                        abProviderList.append(abProvider)
+                                
 
 
 

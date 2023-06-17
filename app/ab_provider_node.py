@@ -95,6 +95,7 @@ class ABnode:
         new_data = self.data
         ret = self.controller.Read(self.abTagName)
         self.readVariantValue(ret.Value)
+        print(ret)
         new_data = self.data
         cb(Result.OK, new_data)
 
