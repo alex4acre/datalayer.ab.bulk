@@ -1,10 +1,9 @@
 from pycomm3 import LogixDriver
 
 with LogixDriver('192.168.1.90') as plc:
-    data = plc.read("Program:MainProgram.Vars")
+    data = plc.read("TestStruct.struct.rTest")
     print(data)
-    index = data
-    print(index)
+
     #for key in index:  
     #    data[key] = 5
     #plc.write("Program:MainProgram.Vars", data)

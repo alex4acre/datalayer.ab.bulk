@@ -4,7 +4,7 @@ from struct import pack, unpack_from, pack_into
 comm = PLC()
 comm.IPAddress = '192.168.1.90'
 #comm.tag
-ret = (comm.Read('Program:MainProgram.Vars_Out[0]'))
+ret = (comm.Read('Program:MainProgram.JogSFK4H.StatusWord[0]'))
 print(ret.Value)
 #(comm.Write('Program:MainProgram.Vars.Index_2', 25.0))
 #data = unpack_from('<f', ret.Value, 4)
