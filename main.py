@@ -98,7 +98,7 @@ def structSorter(structItems):
                 path = key 
                 tagName = key
                 dataType = structItems[key]['data_type']
-                abTagTuple = (path, tagName, dataType)
+                abTagTuple = (dataType + "/" + path, tagName, dataType)
                 abList.append(abTagTuple)    
             elif structItems[key]['tag_type'] == 'atomic' and structItems[key]['array'] != 0:
                 dataType = structItems[key]['data_type']
@@ -106,19 +106,19 @@ def structSorter(structItems):
                     
                     path = key + "/" + str(x)
                     tagName = key + "[" + str(x) + "]"
-                    abTagTuple = (path, tagName, dataType)
+                    abTagTuple = ("ARRAY/" + path, tagName, dataType)
                     abList.append(abTagTuple)
             elif structItems[key]['tag_type'] == "struct":
                 name = structItems[key]['data_type']['name']
                 sortedStruct = structSorter(structItems[key]["data_type"]["internal_tags"])
                 for i in sortedStruct:
-                    updatedPath = (name + "/" + i[0], "struct" + "." + i[1], i[2]) 
+                    updatedPath = ("STRUCT" + "/" + name + "/" + i[0], key + "." + i[1], i[2]) 
                     abList.append(updatedPath)       
         elif structItems[key]['tag_type'] == "atomic":
             path = key
             tagName = key
             dataType = structItems[key]['data_type']
-            abTagTuple = (path, tagName, dataType)
+            abTagTuple = (dataType + "/" + path, tagName, dataType)
             abList.append(abTagTuple)
     return abList 
 

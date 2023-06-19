@@ -57,7 +57,7 @@ with LogixDriver('192.168.1.90') as plc:
     tag_List = plc.get_tag_list("*")
     structItems = plc.tags["TestStruct"]
     #print(tag_List)
-    #print(structItems)
+    print(structItems)
     #print("\n")
     #print(structItems["data_type"]["internal_tags"])
     #print("\n")
