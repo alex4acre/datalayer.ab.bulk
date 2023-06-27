@@ -54,10 +54,14 @@ def tagSorter(tag):
     return abList 
 
 with LogixDriver('192.168.1.90') as plc:
-    tag_List = plc.get_tag_list("*")
-    structItems = plc.tags["TestStruct"]
+    #tag_List = plc.get_tag_list("")  #gets the controller level tags
+    tag_List = plc.get_tag_list("Program:MainProgram")  #gets the program level tags
+    print(tag_List)
+    for t in tag_List:
+        print(t['tag_name'])
+    #structItems = plc.tags["TestStruct"]
     #print(tag_List)
-    print(structItems)
+    #print(structItems)
     #print("\n")
     #print(structItems["data_type"]["internal_tags"])
     #print("\n")
@@ -66,7 +70,7 @@ with LogixDriver('192.168.1.90') as plc:
     #    print("\n")
     #    print(key)
     #    print (structItems["data_type"]["internal_tags"][key])
-    for t in tag_List:
-        sortedTags = tagSorter(t)
-        for i in sortedTags:
-            print(i)
+    #for t in tag_List:
+    #    sortedTags = tagSorter(t)
+    #    for i in sortedTags:
+    #        print(i)

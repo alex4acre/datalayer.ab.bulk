@@ -37,60 +37,8 @@ from pycomm3 import LogixDriver
 from helper.ctrlx_datalayer_helper import get_provider
 
 from app.ab_provider_node import ABnode
-from app.ab_provider_node import ABnode_Array
-
-def sortTags(tag, tagPreamble : str):
-    abTagList = []
-    if 'array' not in tag:
-        if tag['tag_type'] == 'atomic' and tag['dim'] == 0:
-            path = tagPreamble + tag["data_type"]  + "/" + tag["tag_name"]
-            return (tag['tag_name'], tag['data_type'], path)
-        elif tag['tag_type'] == 'atomic' and tag['dim'] != 0:
-            length = tag["dimensions"][0]
-            for x in range(tag["dimensions"][0]):
-                path = tagPreamble + "ARRAY/" + tag["data_type"]  + "/" + tag["tag_name"] + "/" + str(x)
-                abTagList.append((tag['tag_name'] + "[" + str(x) + "]", tag['data_type'], path))
-            return abTagList
-        elif tag['tag_type'] != 'atomic':
-            #structItems = tag['tag_name']
-            print(tag)
-            for key in tag["data_type"]["internal_tags"].keys():
-                print(key)
-                print (tag["data_type"]["internal_tags"][key])
-                if 'array' in tag["data_type"]["internal_tags"][key]:
-                    if tag["data_type"]["internal_tags"][key]['tag_type'] == "atomic" and tag["data_type"]["internal_tags"][key]['array'] == 0:
-                        newTagItem = sortTags(tag["data_type"]["internal_tags"][key], tagPreamble + "STRUCT/")
-                        if type(newTagItem) is list:
-                            abTagList = abTagList + newTagItem
-                        else:
-                            abTagList.append(newTagItem)
-                        return abTagList    
-    if 'array' in tag:
-        if tag['tag_type'] == 'atomic' and tag['array'] == 0:
-            path = tagPreamble + tag["data_type"]  + "/" + tag["tag_name"]
-            return (tag['tag_name'], tag['data_type'], path)
-        elif tag['tag_type'] == 'atomic' and tag['array'] != 0:
-            length = tag["dimensions"][0]
-            for x in range(tag["dimensions"][0]):
-                path = tagPreamble + "ARRAY/" + tag["data_type"]  + "/" + tag["tag_name"] + "/" + str(x)
-                abTagList.append((tag['tag_name'] + "[" + str(x) + "]", tag['data_type'], path))
-            return abTagList
-        elif tag['tag_type'] != 'atomic':
-            #structItems = tag['tag_name']
-            #print(structItems)
-            for key in tag["data_type"]["internal_tags"].keys():
-                #print(key)
-                if 'array' in tag["data_type"]["internal_tags"][key]:
-                    if tag["data_type"]["internal_tags"][key]['tag_type'] == "atomic" and tag["data_type"]["internal_tags"][key]['array'] == 0:
-                        newTagItem = tag(structItems["data_type"]["internal_tags"][key], tagPreamble + "STRUCT/")  
-                        if type(newTagItem) is list:
-                            abTagList = abTagList + newTagItem
-                        else:
-                            abTagList.append(newTagItem)
-                        return abTagList    
                     
 def structSorter(structItems):
-    
     abList = []
     for key in structItems.keys():
         if 'array' in structItems[key]:
@@ -98,7 +46,8 @@ def structSorter(structItems):
                 path = key 
                 tagName = key
                 dataType = structItems[key]['data_type']
-                abTagTuple = (dataType + "/" + path, tagName, dataType)
+                #abTagTuple = (dataType + "/" + path, tagName, dataType)
+                abTagTuple = (path, tagName, dataType)
                 abList.append(abTagTuple)    
             elif structItems[key]['tag_type'] == 'atomic' and structItems[key]['array'] != 0:
                 dataType = structItems[key]['data_type']
@@ -106,31 +55,36 @@ def structSorter(structItems):
                     
                     path = key + "/" + str(x)
                     tagName = key + "[" + str(x) + "]"
-                    abTagTuple = ("ARRAY/" + path, tagName, dataType)
+                    #abTagTuple = ("ARRAY/" + path, tagName, dataType)
+                    abTagTuple = (path, tagName, dataType)
                     abList.append(abTagTuple)
             elif structItems[key]['tag_type'] == "struct":
                 name = structItems[key]['data_type']['name']
                 sortedStruct = structSorter(structItems[key]["data_type"]["internal_tags"])
                 for i in sortedStruct:
-                    updatedPath = ("STRUCT" + "/" + name + "/" + i[0], key + "." + i[1], i[2]) 
+                    #updatedPath = ("STRUCT" + "/" + name + "/" + i[0], key + "." + i[1], i[2]) 
+                    updatedPath = (name + "/" + i[0], key + "." + i[1], i[2]) 
                     abList.append(updatedPath)       
         elif structItems[key]['tag_type'] == "atomic":
             path = key
             tagName = key
             dataType = structItems[key]['data_type']
-            abTagTuple = (dataType + "/" + path, tagName, dataType)
+            #abTagTuple = (dataType + "/" + path, tagName, dataType)
+            abTagTuple = (path, tagName, dataType)
             abList.append(abTagTuple)
     return abList 
 
 def tagSorter(tag):
     abList = []
     if tag['tag_type'] == 'atomic' and tag['dim'] == 0:
-        path = tag["data_type"]  + "/" + tag["tag_name"]
+        #path = tag["data_type"]  + "/" + tag["tag_name"]
+        path = tag["tag_name"]
         abTagTuple = (path, tag['tag_name'], tag['data_type'])
         abList.append(abTagTuple)
     elif tag['tag_type'] == 'atomic' and tag['dim'] != 0:
         for x in range(tag["dimensions"][0]):
-            path = tag["data_type"]  + "/" + tag["tag_name"] + "/" + str(x)
+            #path = tag["data_type"]  + "/" + tag["tag_name"] + "/" + str(x)
+            path = tag["tag_name"] + "/" + str(x)
             abTagTuple = (path, tag['tag_name'] + "[" + str(x) + "]", tag['data_type'])
             abList.append(abTagTuple)
     elif tag['tag_type'] != 'atomic':
@@ -138,7 +92,8 @@ def tagSorter(tag):
         tagName = tag['tag_name']
         newList = structSorter(tag["data_type"]["internal_tags"])
         for i in newList:
-            updatedPath = ("STRUCT/" + tagName + "/" + i[0], tagName + "." + i[1], i[2]) 
+            #updatedPath = ("STRUCT/" + tagName + "/" + i[0], tagName + "." + i[1], i[2]) 
+            updatedPath = (tagName + "/" + i[0], tagName + "." + i[1], i[2]) 
             abList.append(updatedPath)
     return abList 
             
@@ -177,112 +132,44 @@ def main():
             comm = PLC()
             devices = comm.Discover()
             print(devices.Value)
-            #if devices.Value != []:
-            if False:
+            if devices.Value != []:
+            #if False:
                 for device in devices.Value:
+                    print("Device: " + device)
                     with LogixDriver(device.IPAddress) as controller:
-                        tags = plc.get_tag_list('*')
-                        deviceProperties = comm.GetDeviceProperties()
-                        for t in tags.Value:
-                            #print(t)
-                            if t['tag_type'] == 'atomic':
-                                #print(t.DataType)
-                                abProvider = ABnode(provider, t['tag_name'], controller, t['data_type'], deviceProperties.Value.ProductName)
-                                abProvider.register_node()
-                                abProviderList.append(abProvider)
-            elif False:
-                comm = PLC()
-                comm.IPAddress = "192.168.1.90"
-                with LogixDriver("192.168.1.90") as controller:
                         tags = controller.get_tag_list('*')
-                        deviceProperties = comm.GetDeviceProperties()
+                        print(controller.info)
                         for t in tags:
-                            print(t["tag_name"])
-                            if t['tag_type'] == 'atomic' and t['dim'] == 0:
-                                path = controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/" + t["data_type"]  + "/" + t["tag_name"]
-                                abTagTuple = (path, t['tag_name'], t['data_type'])
-                                abProvider = ABnode(provider, t['tag_name'], comm, t['data_type'], path)
-                                abProvider.register_node()
-                                abProviderList.append(abProvider)
-                            elif t['tag_type'] == 'atomic' and t['dim'] != 0:
-                                length = t["dimensions"][0]
-                                for x in range(t["dimensions"][0]):
-                                    path = controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/ARRAY/" + t["data_type"]  + "/" + t["tag_name"] + "/" + str(x)
-                                    
-                                    abTagTuple = (path, t['tag_name'] + "[" + str(x) + "]", t['data_type'])
-                                    abProvider = ABnode_Array(provider, t['tag_name'] + "[" + str(x) + "]", comm, t['data_type'], path)
-                                    abProvider.register_node()
-                                    abProviderList.append(abProvider)
-                            elif t['tag_type'] != 'atomic':
-                                structItems = controller.tags[t['tag_name']]
-                                #print(structItems)
-                                for key in structItems["data_type"]["internal_tags"].keys():
-                                    print(key)
-                                    if 'array' in structItems["data_type"]["internal_tags"][key]:
-                                        if structItems["data_type"]["internal_tags"][key]['tag_type'] == "atomic" and structItems["data_type"]["internal_tags"][key]['array'] == 0:
-                                            path = controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/STRUCT/" + t["tag_name"] + "/" + key
-                                            tagName = t['tag_name'] + "." + key
-                                            dataType = structItems["data_type"]["internal_tags"][key]['data_type']
-                                            abProvider = ABnode(provider, tagName, comm, dataType, path)
-                                            abProvider.register_node()
-                                            abProviderList.append(abProvider)
-                                    elif structItems["data_type"]["internal_tags"][key]['tag_type'] == "atomic":
-                                        path = controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/STRUCT/" + t["tag_name"] + "/" + key
-                                        tagName = t['tag_name'] + "." + key
-                                        dataType = structItems["data_type"]["internal_tags"][key]['data_type']
-                                        abProvider = ABnode(provider, tagName, comm, dataType, path)
-                                        abProvider.register_node()
-                                        abProviderList.append(abProvider)
-            elif False:
-                abList_ProviderData = [];
-                comm = PLC()
-                comm.IPAddress = "192.168.1.90"
-                with LogixDriver("192.168.1.90") as controller:
-                        tags = controller.get_tag_list('*')
-                        deviceProperties = comm.GetDeviceProperties()
-                        for t in tags:
-                            print(t["tag_name"])
-                            tagSetup = sortTags(t, controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/")
-                            if tagSetup != None:
-                                if type(tagSetup) is list:
-                                    abList_ProviderData = abList_ProviderData + tagSetup
+                            sortedTags = tagSorter(t)        
+                            for i in sortedTags:
+                                corePath = i[0]
+                                if corePath.find("Program:") != -1:
+                                    corePath = corePath.replace("Program:", "")
+                                    pathSplit = corePath.split(".")
+                                    abProvider = ABnode(provider, i[1], device, i[2], controller.info["product_name"].replace("/", "--") + "/" + device.IPAddress + "/" + pathSplit[0] + "/" + pathSplit[1])
                                 else:
-                                    abList_ProviderData.append(tagSetup)    
-                                #for t in tagSetup:
-                                 #   abList_ProviderData.append(t)
-                            #if t['tag_type'] == 'atomic' and t['dim'] == 0:
-                            #    path = controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/" + t["data_type"]  + "/" + t["tag_name"]
-                            #    abTagTuple = (path, t['tag_name'], t['data_type'])
-                        for i in abList_ProviderData:
-                            print(i)    
-                            print("\n")
-                        for i in abList_ProviderData:
-                            print(i)
-                            abProvider = ABnode(provider, i[0], comm, i[1], i[2])
-                            abProvider.register_node()
-                            abProviderList.append(abProvider)
+                                    abProvider = ABnode(provider, i[1], device, i[2], controller.info["product_name"].replace("/", "--") + "/" + device.IPAddress + "/" + "ControllerTags" + "/" + i[0])    
+                                abProvider.register_node()
+                                abProviderList.append(abProvider)
             else:
                 comm = PLC()
                 comm.IPAddress = "192.168.1.90"
                 with LogixDriver("192.168.1.90") as controller:
-                        tags = controller.get_tag_list('*')
-                        deviceProperties = comm.GetDeviceProperties()
-                        tagList = []
-                        for t in tags:
-                            print(t["tag_name"])
-                            sortedTags = tagSorter(t)        
-                            for i in sortedTags:
-                                abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/" + i[0])
-                                print(i[1])
-                                abProvider.register_node()
-                                abProviderList.append(abProvider)
-
-
+                    tags = controller.get_tag_list('*')
+                    print(controller.info)
+                    for t in tags:
+                        sortedTags = tagSorter(t)        
+                        for i in sortedTags:
+                            corePath = i[0]
+                            if corePath.find("Program:") != -1:
+                                corePath = corePath.replace("Program:", "")
+                                pathSplit = corePath.split(".")
+                                abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/" + pathSplit[0] + "/" + pathSplit[1])
+                            else:
+                                abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/" + "ControllerTags" + "/" + i[0])    
+                            abProvider.register_node()
+                            abProviderList.append(abProvider)
                     
-
-
-
-
             print("INFO Running endless loop...", flush=True)
             while provider.is_connected():
                 time.sleep(1.0)  # Seconds
@@ -292,6 +179,9 @@ def main():
             for i in abProviderList:
                 i.unregister_node()
                 del i
+
+            comm.Close()
+            controller.close(0)
 
             print("Stopping Data Layer provider:", end=" ", flush=True)
             result = provider.stop()
