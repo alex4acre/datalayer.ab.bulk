@@ -129,16 +129,24 @@ def main():
                 #mddb_path = os.path.join(snap_path, mddb_file)
             abProviderList = []
             abTagList = []
-            comm = PLC()
-            devices = comm.Discover()
-            print(devices.Value)
-            if devices.Value != []:
-            #if False:
+            #comm = PLC()
+            tagDict = {}
+            with PLC() as comm:
+                devices = comm.Discover()
                 for device in devices.Value:
-                    print("Device: " + device)
+                    print('Found Device: ' + device.IPAddress + '  Product Code: ' + device.ProductName + " " + str(device.ProductCode) + '  Vendor/Device ID:' + device.Vendor + " " + str(device.DeviceID) + '  Revision/Serial:' + device.Revision + " " + device.SerialNumber)
+                    print(device.IPAddress)
+                    #print('  Product Code: ' + device.ProductName + " " + str(device.ProductCode))
+                    #print('  Vendor/Device ID:' + device.Vendor + " " + str(device.DeviceID))
+                    #print('  Revision/Serial:' + device.Revision + " " + device.SerialNumber)
+                    #print('')
+            
+            if devices.Value != []:
+                for device in devices.Value:
+                    comm = PLC()
+                    comm.IPAddress = device.IPAddress
                     with LogixDriver(device.IPAddress) as controller:
                         tags = controller.get_tag_list('*')
-                        print(controller.info)
                         for t in tags:
                             sortedTags = tagSorter(t)        
                             for i in sortedTags:
@@ -146,12 +154,15 @@ def main():
                                 if corePath.find("Program:") != -1:
                                     corePath = corePath.replace("Program:", "")
                                     pathSplit = corePath.split(".")
-                                    abProvider = ABnode(provider, i[1], device, i[2], controller.info["product_name"].replace("/", "--") + "/" + device.IPAddress + "/" + pathSplit[0] + "/" + pathSplit[1])
+                                    abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/" + pathSplit[0] + "/" + pathSplit[1], tagDict)
                                 else:
-                                    abProvider = ABnode(provider, i[1], device, i[2], controller.info["product_name"].replace("/", "--") + "/" + device.IPAddress + "/" + "ControllerTags" + "/" + i[0])    
+                                    abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/" + "ControllerTags" + "/" + i[0], tagDict)    
                                 abProvider.register_node()
                                 abProviderList.append(abProvider)
             else:
+                print('No devices found on startup')
+                
+            if False:
                 comm = PLC()
                 comm.IPAddress = "192.168.1.90"
                 with LogixDriver("192.168.1.90") as controller:
@@ -164,15 +175,16 @@ def main():
                             if corePath.find("Program:") != -1:
                                 corePath = corePath.replace("Program:", "")
                                 pathSplit = corePath.split(".")
-                                abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/" + pathSplit[0] + "/" + pathSplit[1])
+                                abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/" + pathSplit[0] + "/" + pathSplit[1], tagDict)
                             else:
-                                abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/" + "ControllerTags" + "/" + i[0])    
+                                abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--") + "/" + comm.IPAddress + "/" + "ControllerTags" + "/" + i[0], tagDict)    
                             abProvider.register_node()
                             abProviderList.append(abProvider)
                     
             print("INFO Running endless loop...", flush=True)
             while provider.is_connected():
                 time.sleep(1.0)  # Seconds
+
 
             print("ERROR Data Layer Provider is disconnected", flush=True)
 

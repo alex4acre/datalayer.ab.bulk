@@ -34,7 +34,7 @@ from ctrlxdatalayer.metadata_utils import MetadataBuilder
 
 class ABnode:
 
-    def __init__(self, provider : Provider, abTagName : str, controller : PLC, type : str, path : str):
+    def __init__(self, provider : Provider, abTagName : str, controller : PLC, type : str, path : str, tagUpdates : dict):
         
         self.cbs = ProviderNodeCallbacks(
             self.__on_create,
@@ -61,7 +61,7 @@ class ABnode:
         self.metadata = MetadataBuilder.create_metadata(
             self.abTagName, self.abTagName, "", "", NodeClass.NodeClass.Variable, 
             read_allowed=True, write_allowed=True, create_allowed=False, delete_allowed=False, browse_allowed=True,
-            type_path= self.dataType)
+            type_path = "")
         
         #copies the data from the list to the active data when initialized
         #self.updateVariantValue()
@@ -94,6 +94,7 @@ class ABnode:
     def __on_read(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         new_data = self.data
         ret = self.controller.Read(self.abTagName)
+        #print(self.abTagName)
         self.readVariantValue(ret.Value)
         new_data = self.data
         cb(Result.OK, new_data)
@@ -263,7 +264,7 @@ class ABnode_Array:
 
     def __on_read(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         new_data = self.data
-        #print(self.abTagName)
+        print(self.abTagName)
         with self.controller as con:
             ret = con.Read(self.abTagName)
             #print(ret)
