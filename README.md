@@ -2,6 +2,8 @@
 
 The app finds AB controllers on the local network and in the same subnet as the ctrlX and puts all variables onto the datalayer. 
 
+This work is an extension of the [pylogix  project](https://pypi.org/project/pylogix/) and the [pycomm3 project](https://pypi.org/project/pycomm3/).
+
 ## Preparation
 
 After installation connect an AB controller to the local network of the core. Restart the core. Verify the data is available on the datalayer of the core. This data is also available on the OPC-UA server of the core if equipped. 
