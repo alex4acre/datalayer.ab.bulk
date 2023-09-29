@@ -1,11 +1,8 @@
 from setuptools import setup
 
 setup(
-    #name='sdk-py-datalayer-provider',
     name='ab-tag-provider',
-    #version='2.4.0',
-    version='2.1.0',
-    #description='This sample shows how to provide data to ctrlX Data Layer',
+    version='2.1.1',
     description='This app will find and add all data from Allen-Bradley Controllers on the local network to the data-layer',
     author='SDK Team',
     install_requires = ['ctrlx-datalayer', 'pylogix', 'pycomm3'],    

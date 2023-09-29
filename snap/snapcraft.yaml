@@ -1,7 +1,7 @@
-name: ab-tag-provider #sdk-py-provider
-version: 2.1.0
+name: ab-tag-provider 
+version: 2.1.1
 summary: Data Layer provider for Allen-Bradley Tags
-title: ab-tag-provider #sdk-py-provider
+title: ab-tag-provider 
 description: |
   This app will find and add all data from Allen-Bradley Controllers on the local network to the data-layer.
 
