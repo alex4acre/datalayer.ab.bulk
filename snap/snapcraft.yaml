@@ -1,5 +1,5 @@
 name: ab-tag-provider 
-version: 2.1.1
+version: 2.1.2
 summary: Data Layer provider for Allen-Bradley Tags
 title: ab-tag-provider 
 description: |
@@ -34,6 +34,7 @@ apps:
     plugs:
       - network
       - datalayer
+      - active-solution
     daemon: simple
     restart-condition: always
     passthrough:   
@@ -48,10 +49,23 @@ parts:
       - ctrlx-datalayer
     python-packages:  
       - ./whl/pylogix-0.8.13-py2.py3-none-any.whl
-      - ./whl/pycomm3-1.2.11-py3-none-any.whl
+      - ./whl/pycomm3-1.2.11-py3-none-any.whl 
+  data:    
+    plugin: dump 
+    source: AllenBradley 
+    organize:
+      '*': ./AllenBradley/
             
 plugs:
   datalayer:
     interface: content
     content: datalayer
     target: $SNAP_DATA/.datalayer
+  active-solution: 
+    interface: content
+    content: solutions
+    target: $SNAP_COMMON/solutions
+
+hooks:
+  connect-plug-active-solution:
+    plugs: [active-solution]

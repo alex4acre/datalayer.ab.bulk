@@ -99,6 +99,11 @@ def tagSorter(tag):
             
        
 def main():
+    #config = "./AllenBradley/config.json"
+    #with open(config) as jsonConfig:
+    #    print(json.load(jsonConfig)) 
+    #jsonConfig = {'test':'test1'}
+    #print(jsonConfig) 
 
     with ctrlxdatalayer.system.System("") as datalayer_system:
         datalayer_system.start(False)
@@ -127,6 +132,13 @@ def main():
                 # snap environment
                 #bfbs_path = os.path.join(snap_path, bfbs_file)
                 #mddb_path = os.path.join(snap_path, mddb_file)
+            #print(snap_path)
+            config = "/var/snap/rexroth-solutions/common/solutions/activeConfiguration/AllenBradley/config.json"
+            print(config)
+            with open(config) as jsonConfig:
+                configdata = json.load(jsonConfig)
+                print(configdata) 
+                
             abProviderList = []
             abTagList = []
             #comm = PLC()
@@ -140,8 +152,30 @@ def main():
                     #print('  Vendor/Device ID:' + device.Vendor + " " + str(device.DeviceID))
                     #print('  Revision/Serial:' + device.Revision + " " + device.SerialNumber)
                     #print('')
-            
-            if devices.Value != []:
+            print("autoscan = " + configdata['scan'])        
+            if configdata['scan'] != "true":
+                controllers = configdata["controllers"]
+                for controller in controllers:
+                    comm = PLC()
+                    comm.IPAddress = controller["ip"]
+                    print("Adding controller at " + controller["ip"])
+                    with LogixDriver(device.IPAddress) as controller:
+                        tags = controller.get_tag_list('*')
+                        for t in tags:
+                            sortedTags = tagSorter(t)        
+                            for i in sortedTags:
+                                corePath = i[0]
+                                if corePath.find("Program:") != -1:
+                                    corePath = corePath.replace("Program:", "")
+                                    pathSplit = corePath.split(".")
+                                    abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--").replace(" ","_") + "/" + comm.IPAddress + "/" + pathSplit[0] + "/" + pathSplit[1], tagDict)
+                                else:
+                                    abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--").replace(" ","_") + "/" + comm.IPAddress + "/" + "ControllerTags" + "/" + i[0], tagDict)    
+                                abProvider.register_node()
+                                abProviderList.append(abProvider)
+
+            elif devices.Value != []:
+                print("adding auto-scanned devices")
                 for device in devices.Value:
                     comm = PLC()
                     comm.IPAddress = device.IPAddress
