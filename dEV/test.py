@@ -123,20 +123,32 @@ def main():
                             print(program)
                             print(programs[program])
                             tags = programs[program]["tags"]
-                            for tag in programs[program]["tags"]:
-                                print(tag)
-                                if program != "controller": 
-                                    t = "Program:" + program + "." + tag
-                                else:
-                                    t = tag
-                                print(controller.get_tag_info(t))
+                            print(tags)
+                            if tags is None:
+                                for tag in programs[program]["tags"]:
+                                    print(tag)
+                                    if program != "controller": 
+                                        t = "Program:" + program + "." + tag
+                                    else:
+                                        t = tag
+                                    print(t)
+                            else:
+                                tags = controller.get_tag_list('*')   
+                                
+                                #for t in tags:
+                                #    pprint.pprint(t)         
+                                #print(controller.get_tag_info(t))
                         #print(program)
                         #for tag in program["tags"]:
                         #    t = program + "." + tag
                         #    print(t)
-                    tags = controller.get_tag_list('*')
-                    for t in tags:
-                        pprint.pprint(t)
+                    tags = controller.get_tag_list('')
+                    pprint.pprint(tags)
+                    for tag in tags:
+                        for key in tag.keys():
+                            print(tag[key]['tag_name'])
+                    #for t in tags:
+                    #    pprint.pprint(t)
 
 
 if __name__ == '__main__':

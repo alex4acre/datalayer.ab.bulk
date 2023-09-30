@@ -96,7 +96,19 @@ def tagSorter(tag):
             updatedPath = (tagName + "/" + i[0], tagName + "." + i[1], i[2]) 
             abList.append(updatedPath)
     return abList      
-       
+
+def addData(tag, provider, connection, controller):
+    tagDict = {}
+    corePath = tag[0]
+    if corePath.find("Program:") != -1:
+        corePath = corePath.replace("Program:", "")
+        pathSplit = corePath.split(".")
+        abProvider = ABnode(provider, tag[1], connection, tag[2], controller.info["product_name"].replace("/", "--").replace(" ","_") + "/" + connection.IPAddress + "/" + pathSplit[0] + "/" + pathSplit[1], tagDict)
+    else:
+        abProvider = ABnode(provider, tag[1], connection, tag[2], controller.info["product_name"].replace("/", "--").replace(" ","_") + "/" + connection.IPAddress + "/" + "ControllerTags" + "/" + tag[0], tagDict)    
+    abProvider.register_node()
+    return abProvider
+
 def main():
     
     with ctrlxdatalayer.system.System("") as datalayer_system:
@@ -179,15 +191,16 @@ def main():
                                         print(t)
                                         sortedTags = tagSorter(controller.get_tag_info(t))        
                                         for i in sortedTags:
-                                            corePath = i[0]
-                                            if corePath.find("Program:") != -1:
-                                                corePath = corePath.replace("Program:", "")
-                                                pathSplit = corePath.split(".")
-                                                abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--").replace(" ","_") + "/" + comm.IPAddress + "/" + pathSplit[0] + "/" + pathSplit[1], tagDict)
-                                            else:
-                                                abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--").replace(" ","_") + "/" + comm.IPAddress + "/" + "ControllerTags" + "/" + i[0], tagDict)    
-                                            abProvider.register_node()
-                                            abProviderList.append(abProvider)
+                                            abProviderList.append(addData(i, provider, comm, controller))
+                                            #corePath = i[0]
+                                            #if corePath.find("Program:") != -1:
+                                            #    corePath = corePath.replace("Program:", "")
+                                            #    pathSplit = corePath.split(".")
+                                            #    abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--").replace(" ","_") + "/" + comm.IPAddress + "/" + pathSplit[0] + "/" + pathSplit[1], tagDict)
+                                            #else:
+                                            #    abProvider = ABnode(provider, i[1], comm, i[2], controller.info["product_name"].replace("/", "--").replace(" ","_") + "/" + comm.IPAddress + "/" + "ControllerTags" + "/" + i[0], tagDict)    
+                                            #abProvider.register_node()
+                                            #abProviderList.append(abProvider)
                 elif devices.Value != []:
                     print("adding auto-scanned devices")
                     for device in devices.Value:
