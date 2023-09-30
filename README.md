@@ -7,6 +7,38 @@ This work is an extension of the [pylogix  project](https://pypi.org/project/pyl
 ## Preparation
 
 After installation connect an AB controller to the local network of the core. Restart the core. Verify the data is available on the datalayer of the core. This data is also available on the OPC-UA server of the core if equipped. 
+
+A config.json file is located in the app data of the controller under the AllenBradley folder. This config file can be used to exclusively configure the app to get data from a specific controller, program and set of tags. 
+
+```json
+{
+  "scan": "true", //true by default, set false to select controllers
+  "controllers": [
+    {
+      "ip": "192.168.1.90", //IP of first control
+      "programs": [
+        {
+          "MainProgram": { //name of program wtih tages
+            "tags": [ //name of tags in program
+              "Accel",  
+              "VariableManager"
+            ]
+          }
+        },
+        {
+          "controller": { //controller level tags
+            "tags": [ //tags at the controller level
+              "iCounter",
+              "arErrData"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+ 
 ___
 
 ## License
