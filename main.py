@@ -87,6 +87,10 @@ def tagSorter(tag):
             path = tag["tag_name"] + "/" + str(x)
             abTagTuple = (path, tag['tag_name'] + "[" + str(x) + "]", tag['data_type'])
             abList.append(abTagTuple)
+    elif tag['tag_type'] != 'atomic' and tag['data_type_name'] == 'STRING':
+        path = tag["tag_name"]
+        abTagTuple = (path, tag['tag_name'],tag['data_type_name'])
+        abList.append(abTagTuple)        
     elif tag['tag_type'] != 'atomic':
         abStructList = []
         tagName = tag['tag_name']
