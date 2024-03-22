@@ -115,8 +115,8 @@ def main():
                 for device in devices.Value:
                     print('Found Device: ' + device.IPAddress + '  Product Code: ' + device.ProductName + " " + str(device.ProductCode) + '  Vendor/Device ID:' + device.Vendor + " " + str(device.DeviceID) + '  Revision/Serial:' + device.Revision + " " + device.SerialNumber)
                 comm = PLC()
-                comm.IPAddress = '192.168.1.90'
-                with LogixDriver('192.168.1.90') as controller:
+                comm.IPAddress = '192.168.2.90'
+                with LogixDriver('192.168.2.90') as controller:
                     for programs in application["programs"]:
                         print(programs.keys())
                         for program in programs.keys():

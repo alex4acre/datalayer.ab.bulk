@@ -1,7 +1,7 @@
-name: ab-tag-provider 
-version: 2.1.5
+name: ab-connector
+version: 2.1.6
 summary: Data Layer provider for Allen-Bradley Tags
-title: ab-tag-provider 
+title: ab-connector
 description: |
   This app will find and add all data from Allen-Bradley Controllers on the local network to the data-layer.
 

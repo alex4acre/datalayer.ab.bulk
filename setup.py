@@ -1,8 +1,8 @@
 from setuptools import setup
 
 setup(
-    name='ab-tag-provider',
-    version='2.1.5',
+    name='ab-connector',
+    version='2.1.6',
     description='This app will find and add all data from Allen-Bradley Controllers on the local network to the data-layer',
     author='SDK Team',
     install_requires = ['ctrlx-datalayer', 'pylogix', 'pycomm3'],    
