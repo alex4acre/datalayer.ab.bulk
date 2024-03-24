@@ -34,7 +34,7 @@ from ctrlxdatalayer.metadata_utils import MetadataBuilder
 
 class ABnode:
 
-    def __init__(self, provider : Provider, abTagName : str, controller : PLC, type : str, path : str, tagUpdates : dict):
+    def __init__(self, provider : Provider, abTagName : str, controller : PLC, type : str, path : str):
         
         self.cbs = ProviderNodeCallbacks(
             self.__on_create,
@@ -48,15 +48,11 @@ class ABnode:
         self.providerNode = ProviderNode(self.cbs)
         self.provider = provider
         self.data = Variant()
-        #self.address = "Allen-Bradley/" + deviceID + "/" + type + "/" + abTagName
         self.address = "Allen-Bradley/" + path 
         self.abTagName = abTagName
         self.controller = controller
         self.dataType = self.getVariantType(type)
-        self.type = type
-        #self.dataTypeValue = dataTypeValue
-        
-
+        self.type = type      
 
         self.metadata = MetadataBuilder.create_metadata(
             self.abTagName, self.abTagName, "", "", NodeClass.NodeClass.Variable, 
@@ -93,15 +89,20 @@ class ABnode:
 
     def __on_read(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         new_data = self.data
-        ret = self.controller.Read(self.abTagName)
-        #print(self.abTagName)
-        self.readVariantValue(ret.Value)
+        try:
+            ret = self.controller.Read(self.abTagName)
+            self.readVariantValue(ret.Value)
+        except:
+            print("Failed to read tag " + self.abTagName)    
         new_data = self.data
         cb(Result.OK, new_data)
 
     def __on_write(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _data = data
-        self.writeVariantValue(data)
+        try:
+            self.writeVariantValue(data)
+        except:
+            print('Failed to write node ' + self.abTagName)    
         cb(Result.OK, self.data)
 
     def __on_metadata(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
