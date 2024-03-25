@@ -4,9 +4,9 @@
     "sidebar": [
       {
         "id": "AB-Connector",
-        "title": "Allen-Bradely Connect",
-        "icon": "bosch-ic-solutions",
-        "link": "_blank",
+        "title": "Allen-Bradley Connect",
+        "icon": "/package-assets/${SNAPCRAFT_PROJECT_NAME}/ABConnect",
+        "link": "/solutions/configurations/appdata/content?path=AllenBradley%2F",
         "permissions": [
           "solutions.r",
           "solutions.rw"
@@ -18,8 +18,8 @@
         "id": "AB-Connect-Overview",
         "title": "Allen-Bradley Connect",
         "description": "Configure Allen-Bradley Variable Driver",
-        "icon": "bosch-ic-solutions",
-        "link": "_blank",
+        "icon": "/package-assets/${SNAPCRAFT_PROJECT_NAME}/ABConnect",
+        "link": "/solutions/configurations/appdata/content?path=AllenBradley%2F",
         "permissions": [
           "solutions.r",
           "solutions.rw"

@@ -13,17 +13,20 @@ from helper.ctrlx_datalayer_helper import get_provider
 from app.ab_provider_node import ABnode
 
 
-def myLogger(message, level):
-    if (level != logging.debug): 
+def myLogger(message, level, source=None):
+    if (level > logging.INFO): 
         print(message, flush=True)
-    logger = logging.getLogger(__name__)
-    if (level == logging.info):
+    if (source == None):    
+        logger = logging.getLogger(__name__)
+    else:
+        logger = logging.getLogger(source)    
+    if (level == logging.INFO):
         logger.info(message)
-    elif (level == logging.debug):
+    elif (level == logging.DEBUG):
         logger.debug(message)
-    elif (level == logging.warning):
+    elif (level == logging.WARNING):
         logger.warning(message)
-    elif (level == logging.error):
+    elif (level == logging.ERROR):
         logger.error(message)
 
 #struct sorter takes as an argument a structured variable and returns a list of variables with the entire path

@@ -1,5 +1,12 @@
-17:53:21,248 app.ab_util DEBUG #######################################################################
-17:53:21,249 app.ab_util DEBUG #######################################################################
-17:53:21,249 app.ab_util DEBUG #######################################################################
-17:53:21,249 app.ab_util INFO Initializing application
-17:53:22,360 app.ab_util ERROR Connecting to tcp://boschrexroth:boschrexroth@192.168.1.202 failed.
+20:53:37:705, __main__, DEBUG, #######################################################################
+20:53:37:705, __main__, DEBUG, #######################################################################
+20:53:37:705, __main__, DEBUG, #######################################################################
+20:53:37:706, app.ab_util, INFO, Initializing application
+20:53:37:980, app.ab_util, INFO, Config modified at UNIX TIME 1711246693.9163642
+20:53:37:981, app.ab_util, INFO, Config data: {'scan': 'true', 'controllers': [{'ip': '192.168.2.90', 'programs': [{'MainProgram': {'tags': ''}}, {'controller': {'tags': ['iCounter', 'arErrData']}}]}]}
+20:53:39:996, pycomm3.cip_driver.CIPDriver, DEBUG, Opening connection to 192.168.2.90
+20:53:44:903, __main__, ERROR, Controller at 192.168.2.90 could not be loaded.
+20:53:44:904, __main__, ERROR, Improperly configured application, see application log.
+20:53:44:904, __main__, INFO, Stopping Data Layer provider
+20:53:45:162, __main__, INFO, Data Layer Stopped with result: Result.OK
+20:53:45:164, __main__, INFO, System Stop: True

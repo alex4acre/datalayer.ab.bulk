@@ -1,5 +1,5 @@
 name: ab-connector
-version: 2.1.7
+version: 2.1.8
 summary: Data Layer provider for Allen-Bradley Tags
 title: ab-connector
 description: |

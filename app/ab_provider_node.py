@@ -25,12 +25,10 @@ import ctrlxdatalayer
 from ctrlxdatalayer.provider import Provider
 from ctrlxdatalayer.provider_node import ProviderNode, ProviderNodeCallbacks, NodeCallback
 from ctrlxdatalayer.variant import Result, Variant
-import pylogix
 from pylogix import PLC
-import pycomm3
-from pycomm3 import LogixDriver
 from comm.datalayer import NodeClass
 from ctrlxdatalayer.metadata_utils import MetadataBuilder
+import logging
 
 class ABnode:
 
@@ -92,18 +90,21 @@ class ABnode:
         try:
             ret = self.controller.Read(self.abTagName)
             self.readVariantValue(ret.Value)
+            new_data = self.data
+            cb(Result.OK, new_data)
         except:
-            print("Failed to read tag " + self.abTagName)    
-        new_data = self.data
-        cb(Result.OK, new_data)
+            #myLogger("Failed to read tag " + self.abTagName, logging.WARNING, source=__name__)
+            cb(Result.OK, new_data)    
+        
 
     def __on_write(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
         _data = data
         try:
             self.writeVariantValue(data)
+            cb(Result.OK, self.data)
         except:
-            print('Failed to write node ' + self.abTagName)    
-        cb(Result.OK, self.data)
+            #myLogger("Failed to write tag " + self.abTagName, logging.WARNING, source=__name__)
+            cb(Result.OK, self.data)
 
     def __on_metadata(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
         #print("__on_metadata()", "address:", address,"metadata:",self.metadata, "userdata:", userdata)
@@ -139,6 +140,7 @@ class ABnode:
                 return self.data.set_string(data)
         except Exception as e:
             print(e)
+            #myLogger("Failed to read tag: " + self.abTagName + " with exception: " + e, logging.ERROR, source=__name__)
 
     def writeVariantValue(self, data : Variant):
         try:
@@ -170,6 +172,7 @@ class ABnode:
                 self.controller.Write(self.abTagName, data.get_string())
         except Exception as e:
             print(e)
+            #myLogger("Failed to write tag: " + self.abTagName + " with exception: " + e, logging.ERROR, source=__name__)
 
     def getVariantType(self, type : str):
         try:
@@ -200,7 +203,8 @@ class ABnode:
             elif type == "STRING":
                 return "string"
         except Exception as e:
-            print(e) 
+            print(e)
+            #myLogger("Failed to get type for tag: " + self.abTagName + " with exception: " + e, logging.ERROR, source=__name__)
 
     def updateVariantValue(self) -> Result:
         return self.readVariantValue(self.abTagValues[self.listIndex])

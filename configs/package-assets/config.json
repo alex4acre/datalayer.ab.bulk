@@ -1,0 +1,26 @@
+{
+    "scan": "true",
+    "controllers": [
+      {
+        "ip": "192.168.1.90",
+        "programs": [
+          {
+            "MainProgram": {
+              "tags": [
+                "Accel",
+                "SFK4H_VariableManager"
+              ]
+            }
+          },
+          {
+            "controller": {
+              "tags": [
+                "iCounter",
+                "arErrData"
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
