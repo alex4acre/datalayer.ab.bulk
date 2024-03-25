@@ -1,5 +1,5 @@
 name: ab-connector
-version: 2.1.6
+version: 2.1.7
 summary: Data Layer provider for Allen-Bradley Tags
 title: ab-connector
 description: |
@@ -55,6 +55,11 @@ parts:
     source: AllenBradley 
     organize:
       '*': ./AllenBradley/
+  configs:
+    plugin: dump
+    source: ./configs
+    organize:
+      'package-assets/*': package-assets/${SNAPCRAFT_PROJECT_NAME}/    
             
 plugs:
   datalayer:
@@ -66,6 +71,13 @@ plugs:
     content: solutions
     target: $SNAP_COMMON/solutions
 
+slots: 
+  package-assets:
+      interface: content
+      content: package-assets
+      source:
+        read:
+        - $SNAP/package-assets/${SNAPCRAFT_PROJECT_NAME}
 hooks:
   connect-plug-active-solution:
     plugs: [active-solution]

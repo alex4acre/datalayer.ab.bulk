@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.boschrexroth.com/ctrlx-automation/ctrlx-core/apps/package-manifest/package-manifest.v1.3.schema.json",
+  "menus": {
+    "sidebar": [
+      {
+        "id": "AB-Connector",
+        "title": "Allen-Bradely Connect",
+        "icon": "bosch-ic-solutions",
+        "link": "_blank",
+        "permissions": [
+          "solutions.r",
+          "solutions.rw"
+        ]
+      }
+    ],
+    "overview": [
+      {
+        "id": "AB-Connect-Overview",
+        "title": "Allen-Bradley Connect",
+        "description": "Configure Allen-Bradley Variable Driver",
+        "icon": "bosch-ic-solutions",
+        "link": "_blank",
+        "permissions": [
+          "solutions.r",
+          "solutions.rw"
+        ]
+      }
+    ]
+  }
+}
