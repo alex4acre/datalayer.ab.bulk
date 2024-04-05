@@ -36,8 +36,8 @@ from pycomm3 import LogixDriver
 
 from helper.ctrlx_datalayer_helper import get_provider
 
-from app.ab_provider_node import ABnode
-from app.ab_provider_node import ABnode_Array
+from app.ab_provider_node_bulk import ABnode
+from app.ab_provider_node_bulk import ABnode_Array
 
 def main():
 

@@ -1,20 +1,12 @@
 {
-    "scan": "true",
+    "scan": "false",
     "controllers": [
       {
-        "ip": "192.168.2.90",
+        "ip": "192.168.1.90",
         "programs": [
           {
-            "MainProgram": {
-              "tags": ""
-            }
-          },
-          {
-            "controller": {
-              "tags": [
-                "iCounter",
-                "arErrData"
-              ]
+            "TestProgram": {
+              "tags": ["TestRecipe"]
             }
           }
         ]

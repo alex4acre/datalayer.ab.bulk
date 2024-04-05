@@ -4,8 +4,23 @@ from struct import pack, unpack_from, pack_into
 comm = PLC()
 comm.IPAddress = '192.168.1.90'
 #comm.tag
-ret = (comm.Read('Program:MainProgram.JogSFK4H.StatusWord[0]'))
-print(ret.Value)
+tagList = ['Program:TestProgram.TestRecipe.RecipeNumber',
+'Program:TestProgram.TestRecipe.RecipeName']
+tagList = ['Program:TestProgram.TestRecipe.RecipeNumber', 'Program:TestProgram.TestRecipe.RecipeName']
+lookup = dict()
+index = 0
+for tag in tagList:
+    lookup[tag] = index
+    index = index + 1
+#ret = (comm.Read('Program:TestProgram.TestRecipe.DataBOOL'))
+ret = (comm.Read(tagList))
+print(ret)
+for returns in ret:
+    print(returns.Value)
+#ret = (comm.Read('Workfile.Data.RecipeNumber'))
+#print(ret.Value)
+print(ret[lookup['Program:TestProgram.TestRecipe.RecipeNumber']].Value)
+
 #(comm.Write('Program:MainProgram.Vars.Index_2', 25.0))
 #data = unpack_from('<f', ret.Value, 4)
 #print(data)

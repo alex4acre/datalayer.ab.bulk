@@ -10,7 +10,8 @@ import logging
 import pycomm3
 from pycomm3 import LogixDriver
 from helper.ctrlx_datalayer_helper import get_provider
-from app.ab_provider_node import ABnode
+from app.ab_provider_node_bulk import ABnodeBulk
+from collections import OrderedDict
 
 
 def myLogger(message, level, source=None):
@@ -50,13 +51,27 @@ def structSorter(structItems):
                     tagName = key + "[" + str(x) + "]"
                     abTagTuple = (datalayerPath, tagName, dataType)
                     abList.append(abTagTuple)
+            elif structItems[key]['tag_type'] != 'atomic' and structItems[key]['data_type']['name'] == 'STRING':
+                #check to to see if the tag is a string
+                datalayerPath = key
+                datatype = 'STRING' #structItems[key]['data_type_name'] 
+                abTagTuple = (datalayerPath, key, datatype)
+                abList.append(abTagTuple)                           
             elif structItems[key]['tag_type'] == "struct":
                 #if the item is not atomic (meaning it is a structured type) then it needs to be passed to the same function recursively
                 name = structItems[key]['data_type']['name'] #capture the base name of the strucute to add to the datalayer path
                 sortedStruct = structSorter(structItems[key]["data_type"]["internal_tags"])
                 for i in sortedStruct:
-                    updatedPath = (name + "/" + i[0], key + "." + i[1], i[2]) 
-                    abList.append(updatedPath) #add each object that is returned to the list that the function returns       
+                    #updatedPath = (name + "/" + i[0], key + "." + i[1], i[2]) 
+                    updatedPath = (key + "/" + i[0], key + "." + i[1], i[2]) 
+                    abList.append(updatedPath) #add each object that is returned to the list that the function returns  
+        #elif structItems[key]['tag_type'] != 'atomic' and  structItems[key]['data_type_name'] == 'STRING':
+        elif structItems[key]['tag_type'] != 'atomic' and structItems[key]['data_type']['name'] == 'STRING':
+            #check to to see if the tag is a string
+            datalayerPath = key
+            datatype = 'string' #structItems[key]['data_type_name'] 
+            abTagTuple = (datalayerPath, key, datatype)
+            abList.append(abTagTuple)                   
         elif structItems[key]['tag_type'] == "atomic":
             #if the item is atomic (meaning it is a base type) and not an array it is added to the list  
             datalayerPath = key
@@ -67,14 +82,14 @@ def structSorter(structItems):
 
 def tagSorter(tag):
     abList = []
-    if tag['tag_type'] == 'atomic' and tag['dim'] == 0:
+    if tag['tag_type'] == 'atomic' and tag['array'] == 0:
         #get the base tag and add it to the master list of tags
         datalayerPath = tag["tag_name"]
         key = tag["tag_name"]
         datatype = tag['data_type']
         abTagTuple = (datalayerPath, key, datatype)
         abList.append(abTagTuple)
-    elif tag['tag_type'] == 'atomic' and tag['dim'] != 0:
+    elif tag['tag_type'] == 'atomic' and tag['array'] != 0:
         #get the base tag and an array add each one to the master list of tags
         for x in range(tag["dimensions"][0]):
             datalayerPath = tag["tag_name"] + "/" + str(x)
@@ -98,13 +113,13 @@ def tagSorter(tag):
             abList.append(updatedPath)
     return abList      
 
-def addData(tag, provider, connection, controller):
+def addData(tag, provider, connection, controller,  tagData:list, tagDict, index):
     corePath = tag[0]
     if corePath.find("Program:") != -1:
         corePath = corePath.replace("Program:", "")
         pathSplit = corePath.split(".")
-        abProvider = ABnode(provider, tag[1], connection, tag[2], controller.info["product_name"].replace("/", "--").replace(" ","_") + "/" + connection.IPAddress + "/" + pathSplit[0] + "/" + pathSplit[1])
+        abProvider = ABnodeBulk(provider, tag[1], connection, tag[2], controller.info["product_name"].replace("/", "--").replace(" ","_") + "/" + connection.IPAddress + "/" + pathSplit[0] + "/" + pathSplit[1], tagData, tagDict, index)
     else:
-        abProvider = ABnode(provider, tag[1], connection, tag[2], controller.info["product_name"].replace("/", "--").replace(" ","_") + "/" + connection.IPAddress + "/" + "ControllerTags" + "/" + tag[0])    
+        abProvider = ABnodeBulk(provider, tag[1], connection, tag[2], controller.info["product_name"].replace("/", "--").replace(" ","_") + "/" + connection.IPAddress + "/" + "ControllerTags" + "/" + tag[0], tagData, tagDict, index)   
     abProvider.register_node()
     return abProvider

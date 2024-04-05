@@ -1,14 +1,15 @@
 from pycomm3 import LogixDriver
 
 with LogixDriver('192.168.1.90') as plc:
-    tag_List = plc.get_tag_list("*")
+    tag_List = plc.get_tag_info('Program:TestProgram.TestRecipe.RecipeNumber')
     #print(plc.tags.keys())
     #print(plc.info)
-    for t in tag_List:
-        print(t)
-        index = t['tag_name'].find("Program:")
-        print(index)
-        print("\n")
+    print(tag_List)
+    #for t in tag_List:
+        #print(t)
+        #index = t['tag_name'].find("Program:")
+        #print(index)
+        #print("\n")y
         #if t["tag_type"] == "struct": 
         #    print(t["tag_type"])
     #    name = t["tag_name"].split(".")

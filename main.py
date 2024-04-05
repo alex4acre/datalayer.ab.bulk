@@ -24,19 +24,18 @@
 
 import os
 import sys
-import time
 import json
 import ctrlxdatalayer
-from ctrlxdatalayer.variant import Variant, Result
+from ctrlxdatalayer.variant import Result
 from pylogix import PLC
 import logging
 import logging.handlers
 from pycomm3 import LogixDriver
 from helper.ctrlx_datalayer_helper import get_provider
 from app.ab_util import myLogger, tagSorter, addData
-#from cysystemd import journal
+from collections import OrderedDict
 
-def runApp(provider):
+def runApp(provider, tagList:list):
     # Path to compiled files
     snap_path = os.getenv('SNAP')
     if snap_path is None:
@@ -53,104 +52,59 @@ def runApp(provider):
         
     #Define the master list of data
     abProviderList = []
-    with PLC() as comm:
-        devices = comm.Discover() #find all of the rockwell devices
-        for device in devices.Value: 
-            #for each device, print what was found
-            message = 'Found Device: ' + device.IPAddress + '  Product Code: ' + device.ProductName + " " + str(device.ProductCode) + '  Vendor/Device ID:' + device.Vendor + " " + str(device.DeviceID) + '  Revision/Serial:' + device.Revision + " " + device.SerialNumber
-            myLogger(message, logging.INFO, source=__name__)
-    if snap_path is not None: #this means the app is deployed on a target
-        #start the process of checking for the variables
-        myLogger("Autoscan Setting = " + configdata['scan'], logging.INFO, source=__name__)        
-        if configdata['scan'] != "true":
-            #if the auto scan is not true then load controllers from file
-            if "controllers" in configdata:
-                applications = configdata['controllers']
-                for application in applications:
-                    myLogger('Loading configuration for ' + application, logging.INFO, source=__name__)
-                    comm = PLC()
-                    comm.IPAddress = application["ip"]
-                    myLogger("Adding controller at " + application["ip"], logging.INFO, source=__name__)
-                    try:
-                        with LogixDriver(device.IPAddress) as controller:
-                            if "programs" in application:
-                                for programs in application["programs"]:
-                                    #cycle through the programs in the application
-                                    for program in programs.keys():
-                                        if "tags" in programs[program]:
-                                            for tag in programs[program]["tags"]:
-                                                #cycle through the tags in the configuration file
-                                                if program != "controller": 
-                                                    tag = "Program:" + program + "." + tag
-                                                else:
-                                                    tag = tag
-                                                print('Adding Tag: ' + tag)
-                                                sortedTags = tagSorter(controller.get_tag_info(tag))        
-                                                for sortedTag in sortedTags:
-                                                    abProviderList.append(addData(sortedTag, provider, comm, controller))
-                                        else:       
-                                            #if the tags are not explicit in the file 
-                                            if program != "controller": 
-                                                tagPath = "Program:" + program
-                                            else:
-                                                tagPath = ""
-                                            tags = controller.get_tag_list(tagPath) 
-                                            for tag in tags:
-                                                if tag['tag_name'].find("Program:.") != -1:
-                                                    tag['tag_name'] = tag['tag_name'].split(".")[1]
-                                                sortedTags = tagSorter(tag)        
-                                                for sortedTag in sortedTags:
-                                                    abProviderList.append(addData(sortedTag, provider, comm, controller))                                                      
-                            else:
-                                tags = controller.get_tag_list('*')
-                                for tag in tags:
-                                    #pass each tag to the tag sorter which returns 
-                                    sortedTags = tagSorter(tag)        
-                                    for sortedTag in sortedTags:
-                                        abProviderList.append(addData(sortedTag, provider, comm, controller))
-                            return abProviderList, comm, controller
-                    except:
-                        myLogger("Controller at " + comm.IPAddress + " could not be loaded.", logging.ERROR, source=__name__) 
-                        return None, None, None  
-            else:
-                #if no devices were configured in the file, return empty and log the exception
-                myLogger('No devices configured in the configuration data.', logging.ERROR, source=__name__)
-                return None, None, None    
-            
-        elif devices.Value != []:
-            print("adding auto-scanned devices")
-            for device in devices.Value:
+    tagData = []
+    tagDict = OrderedDict()
+    tagDict['firstEntry'] = 0
+    index = 0
+    #tagList = []
+    print(configdata)
+    #if snap_path is not None: #this means the app is deployed on a target
+    #start the process of checking for the variables
+    myLogger("Autoscan Setting = " + configdata['scan'], logging.INFO, source=__name__)        
+    if configdata['scan'] != "true":
+        #if the auto scan is not true then load controllers from file
+        if "controllers" in configdata:
+            applications = configdata['controllers']
+            for application in applications:
+                #myLogger('Loading configuration for ' + str(application), logging.INFO, source=__name__)
                 comm = PLC()
-                comm.IPAddress = device.IPAddress
+                comm.IPAddress = application["ip"]
+                #myLogger("Adding controller at " + application["ip"], logging.INFO, source=__name__)
                 try:
-                    with LogixDriver(device.IPAddress) as controller:
-                        tags = controller.get_tag_list('*')
-                        for t in tags:
-                            sortedTags = tagSorter(t)        
-                            for sortedTag in sortedTags:
-                                abProviderList.append(addData(sortedTag, provider, comm, controller))
-                        return abProviderList, comm, controller
+                    with LogixDriver(application["ip"]) as controller:
+                        if "programs" in application:
+                            for programs in application["programs"]:
+                                #cycle through the programs in the application
+                                for program in programs.keys():
+                                    if "tags" in programs[program]:
+                                        tags = programs[program]["tags"]
+                                        for tag in tags:
+                                            #cycle through the tags in the configuration file
+                                            if program != "controller": 
+                                                tag = "Program:" + program + "." + tag
+                                            else:
+                                                tag = tag
+                                            print('Adding Tag: ' + tag)
+                                            tagInfo = controller.get_tag_info(tag)
+
+                                            sortedTags = tagSorter(controller.get_tag_info(tag))        
+                                            for sortedTag in sortedTags:
+                                                print(sortedTag[1])
+                                                tagData.append(sortedTag[1])
+                                                
+                                                tagDict[sortedTag[1]] = tagDict[next(reversed(tagDict))] + 1
+                                                abProviderList.append(addData(sortedTag, provider, comm, controller, tagList, tagDict, index))
+                                                index = index + 1   
+                        print('Tag Data: \n')
+                        print(tagData)                                                                    
+                        return abProviderList, comm, controller, tagData, tagDict
                 except:
-                    myLogger("Controller at " + comm.IPAddress + " could not be loaded.", logging.ERROR, source=__name__)
-                    return None, None, None
-                                  
+                    myLogger("Controller at " + comm.IPAddress + " could not be loaded.", logging.ERROR, source=__name__) 
+                    return None, None, None, None, None
         else:
-            print('No devices found on startup')  
-    else: #use a defined PLC IP for debug and testing
-        comm = PLC()
-        comm.IPAddress = "192.168.2.90"
-        try:        
-            with LogixDriver("192.168.2.90") as controller:
-                tags = controller.get_tag_list('*')
-                print(controller.info)
-                for t in tags:
-                    sortedTags = tagSorter(t)        
-                    for sortedTag in sortedTags:
-                        abProviderList.append(addData(sortedTag, provider, comm, controller))
-                return abProviderList, comm, controller          
-        except:
-            myLogger("Controller at " + comm.IPAddress + " could not be loaded.", logging.ERROR, source=__name__)
-            return None, None, None
+            #if no devices were configured in the file, return empty and log the exception
+            myLogger('No devices configured in the configuration data.', logging.ERROR, source=__name__)
+            return None, None, None, None, None  
                   
 def main():
 
@@ -166,20 +120,7 @@ def main():
 
     #configure the logger for easier analysis
     logging.basicConfig(filename = logPath, filemode = 'w', format='%(asctime)s:%(msecs)d, %(name)s, %(levelname)s, %(message)s', datefmt= '%H:%M:%S', level=logging.DEBUG)  
-    
-    #logger = logging.getLogger()
-    #logger.setLevel(logging.DEBUG)
-    #logger.addHandler(journal.JournalLogHandler())
-
-    #logger = logging.getLogger(__name__)
-    #logger.setLevel(logging.DEBUG)
-    #handler = logging.handlers.RotatingFileHandler(logPath, maxBytes=1*1024*1024, backupCount=2)
-    #handler.setLevel(logging.DEBUG)
-    #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    #handler.setFormatter(formatter)
-    # add the handler to the logger
-    #logger.addHandler(handler)
-    
+       
     myLogger('#######################################################################', logging.DEBUG, source=__name__)
     myLogger('#######################################################################', logging.DEBUG, source=__name__)
     myLogger('#######################################################################', logging.DEBUG, source=__name__)
@@ -201,25 +142,55 @@ def main():
                 myLogger("ERROR Starting Data Layer Provider failed with:" + str(result), logging.ERROR, source=__name__)
                 return
 
-            #Start the applicaiton             
-            abProviderList, comm, controller = runApp(provider)
+            tagList = []
 
+            #Start the applicaiton             
+            abProviderList, comm, controller, tagData, tagDict = runApp(provider, tagList)
+
+            #here, can truncate the tag list for testing
+            tagData = tagData[:]
+            #print(tagData)
+    
+            comm = PLC()
+            #IP Address hard coded for this rough testing...
+            comm.IPAddress = '192.168.1.90'
+
+            #this step is neccessary to copy of the content of the tag data to the new tags, unclear why this is required. 
+            tempTagList = comm.Read(tagData)
+            for tags in tempTagList:
+                tagList.append(tags)
+
+            print(tagList)
+            loopIndex = 0
             #Get the time the files was modified
             fileTime =  os.stat(config).st_mtime
             if abProviderList is not None and comm is not None and controller is not None:       
                 myLogger('INFO Running endless loop...', logging.INFO, source=__name__)
                 while provider.is_connected():
-                    if (fileTime == os.stat(config).st_mtime):
-                        time.sleep(1.0)  # Seconds
-                    else:
-                        fileTime == os.stat(config).st_mtime
-                        myLogger('"ERROR Data Layer Provider is disconnected', logging.ERROR, source=__name__)
-                        for node in abProviderList:
-                            node.unregister_node()
-                            del node
-                        comm.Close()
-                        controller.close(0)
-                        abProviderList, comm, controller = runApp(provider)
+                    tempTagList = comm.Read(tagData)
+                    tagIndex = 0
+                    #for some reason it is required to copy the tags over to the list that is passed to the function that then does the read/write operation 
+                    #perhaps come kind of callback could be used to get this data instead so that upon request the data is directly accessed
+                    for tag in tempTagList:
+                        tagList[tagIndex] = tag
+                        tagIndex = tagIndex + 1 
+
+                    #Count the number of loops    
+                    loopIndex = loopIndex + 1
+
+                    #time.sleep(1.0)   
+                
+                    #if (fileTime == os.stat(config).st_mtime):
+                    #    time.sleep(1.0)  # Seconds
+                    #else:
+                    #    fileTime == os.stat(config).st_mtime
+                    #    myLogger('"ERROR Data Layer Provider is disconnected', logging.ERROR, source=__name__)
+                    #    for node in abProviderList:
+                    #        node.unregister_node()
+                    #        del node
+                    #    comm.Close()
+                    #    controller.close(0)
+                    #    abProviderList, comm, controller = runApp(provider)
             else: 
                 myLogger("Improperly configured application, see application log.", logging.ERROR, source=__name__)            
 
