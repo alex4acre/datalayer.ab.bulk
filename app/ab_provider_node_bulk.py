@@ -399,3 +399,94 @@ class ABnode_Array:
 
     def updateVariantValue(self) -> Result:
         return self.readVariantValue(self.abTagValues[self.listIndex])
+
+class TimeStats:
+
+    def __init__(self, provider : Provider, path : str, index : int, timeData: list, name: str):
+        
+        self.cbs = ProviderNodeCallbacks(
+            self.__on_create,
+            self.__on_remove,
+            self.__on_browse,
+            self.__on_read,
+            self.__on_write,
+            self.__on_metadata
+        )
+
+        self.providerNode = ProviderNode(self.cbs)
+        self.provider = provider
+        self.data = Variant()
+        self.name = name
+        self.address = "Allen-Bradley/TimeStats/" + path 
+        #self.abTagName = abTagName
+        #self.controller = controller
+        self.dataType = 'float' #self.getVariantType(type)
+        self.type = 'float'# type 
+        self.index = index 
+        self.timeData = timeData  
+        #self.tagList = tagListData  
+
+        self.metadata = MetadataBuilder.create_metadata(
+            self.name, self.name, "", "", NodeClass.NodeClass.Variable, 
+            read_allowed=True, write_allowed=False, create_allowed=False, delete_allowed=False, browse_allowed=False,
+            type_path = "")
+        
+        #copies the data from the list to the active data when initialized
+        #self.updateVariantValue()
+        #
+        #print("metadata:",self.metadata)
+
+    def register_node(self):
+      self.provider.register_node(self.address, self.providerNode)      
+    
+    def unregister_node(self):
+        self.provider.unregister_node(self.address)
+    
+    def set_value(self,value: Variant):
+        self.data = value
+
+    def __on_create(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+        #print("__on_create()", "address:", address, "userdata:", userdata)
+        cb(Result.OK, data)
+
+    def __on_remove(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+        #print("__on_remove()", "address:", address, "userdata:", userdata)
+        cb(Result.UNSUPPORTED, None)
+
+    def __on_browse(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+        #print("__on_browse()", "address:", address, "userdata:", userdata)
+        new_data = Variant()
+        new_data.set_array_string([])
+        cb(Result.OK, new_data)
+
+    def __on_read(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+        new_data = self.data
+        ret = self.timeData[self.index]
+        self.data.set_float64(ret)
+        new_data = self.data
+        cb(Result.OK, new_data)
+        try:
+            #ret = self.controller.Read(self.abTagName)
+            ret = self.timeData[self.index]
+            #print(ret)
+            self.data.setfloat(ret)
+            new_data = self.data
+            cb(Result.OK, new_data)
+        except:
+            #myLogger("Failed to read tag " + self.abTagName, logging.WARNING, source=__name__)
+            cb(Result.FAILED, new_data)    
+        
+
+    def __on_write(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, data: Variant, cb: NodeCallback):
+        _data = data
+        self.timeData[self.index] = 0
+        try:
+            #self.writeVariantValue(data)
+            cb(Result.OK, self.data)
+        except:
+            #myLogger("Failed to write tag " + self.abTagName, logging.WARNING, source=__name__)
+            cb(Result.FAILED, self.data)
+
+    def __on_metadata(self, userdata: ctrlxdatalayer.clib.userData_c_void_p, address: str, cb: NodeCallback):
+        #print("__on_metadata()", "address:", address,"metadata:",self.metadata, "userdata:", userdata)
+        cb(Result.OK, self.metadata)

@@ -82,14 +82,14 @@ def structSorter(structItems):
 
 def tagSorter(tag):
     abList = []
-    if tag['tag_type'] == 'atomic' and tag['array'] == 0:
+    if tag['tag_type'] == 'atomic' and tag['dim'] == 0:
         #get the base tag and add it to the master list of tags
         datalayerPath = tag["tag_name"]
         key = tag["tag_name"]
         datatype = tag['data_type']
         abTagTuple = (datalayerPath, key, datatype)
         abList.append(abTagTuple)
-    elif tag['tag_type'] == 'atomic' and tag['array'] != 0:
+    elif tag['tag_type'] == 'atomic' and tag['dim'] != 0:
         #get the base tag and an array add each one to the master list of tags
         for x in range(tag["dimensions"][0]):
             datalayerPath = tag["tag_name"] + "/" + str(x)

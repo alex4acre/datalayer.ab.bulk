@@ -4,7 +4,10 @@ with LogixDriver('192.168.1.90') as plc:
     tag_List = plc.get_tag_info('Program:TestProgram.TestRecipe.RecipeNumber')
     #print(plc.tags.keys())
     #print(plc.info)
-    print(tag_List)
+    #print(tag_List)
+    for key in tag_List.keys():
+        print(key)
+
     #for t in tag_List:
         #print(t)
         #index = t['tag_name'].find("Program:")

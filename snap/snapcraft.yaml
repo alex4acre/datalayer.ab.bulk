@@ -1,7 +1,7 @@
 name: ab-connector-bulk
 version: 0.0.01
-summary: Data Layer provider for Allen-Bradley Tags
-title: ab-connector
+summary: Bulk Data Layer provider for Allen-Bradley Tags
+title: ab-connector-bulk
 description: |
   This app will find and add all data from Allen-Bradley Controllers on the local network to the data-layer.
 
